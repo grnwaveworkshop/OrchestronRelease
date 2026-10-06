@@ -8,7 +8,7 @@ files on the SD card, without reflashing.
 
 This repository holds the released firmware, the user manual and an example SD card.
 
-Current release: **2.32.0** (October 2026). See [CHANGELOG.md](CHANGELOG.md).
+Current release: **2.32.1** (October 2026). See [CHANGELOG.md](CHANGELOG.md).
 
 ## The board
 
@@ -67,7 +67,7 @@ Add a FAT32 microSD card (32 GB or smaller) for the settings and sounds.
 
 | Path | Contents |
 |---|---|
-| [`firmware/`](firmware/) | The firmware as a `.hex` file for Teensy Loader |
+| [`firmware/`](firmware/) | The firmware as a `.hex` file for Teensy Loader (the latest release; earlier ones are in the repository history) |
 | [`docs/USER_MANUAL.md`](docs/USER_MANUAL.md) | The user manual |
 | [`SDCardExamples/`](SDCardExamples/) | An example SD card: `config.ini` with every setting described, `events.ini`, `sequences.ini` with test sequences, two droid sounds and two music tracks |
 | [`CHANGELOG.md`](CHANGELOG.md) | What changed in each release |
@@ -77,7 +77,7 @@ Add a FAT32 microSD card (32 GB or smaller) for the settings and sounds.
 
 1. **Load the firmware.** Install Teensy Loader (part of Teensyduino, from
    [pjrc.com](https://www.pjrc.com/teensy/loader.html)). Connect the board by USB, open
-   `firmware/Orchestron_v2.32.0.hex` in Teensy Loader (File > Open HEX File), and press the
+   `firmware/Orchestron_v2.32.1.hex` in Teensy Loader (File > Open HEX File), and press the
    button on the Teensy. The board reboots when it's done.
 2. **Prepare the SD card.** Format a microSD card FAT32 and copy everything in
    `SDCardExamples/` to the root of the card (not into a folder). Put it in the Teensy's card

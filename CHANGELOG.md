@@ -4,6 +4,17 @@ User-facing changes in each Orchestron release. The firmware for the current rel
 [`firmware/`](firmware/); the [user manual](docs/USER_MANUAL.md) describes how to use each
 feature.
 
+## 2.32.1 - October 2026
+
+- **The same trigger on several lines: every line runs**, in file order, each with its own
+  `when=`. That's how to do more than three things at once, for example `link.lost = stopseq,
+  stopaudio, home` plus `link.lost = mode:idle`. Before, a repeated line replaced the earlier one.
+- **Fixed: a pad button can do different things in different modes**, for example
+  `pad.3 = home, when=mode.idle` and `pad.3 = seq:nod, when=mode.auto`. Before, only one of them
+  ever worked.
+- **User manual:** several actions on one line, repeated triggers, and how to turn sounds off
+  (`audio:manual`, `stopaudio`).
+
 ## 2.32.0 - October 2026
 
 - **Activities:** things the droid does by itself, set in `events.ini`:

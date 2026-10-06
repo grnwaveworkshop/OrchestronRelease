@@ -1,6 +1,6 @@
 # Orchestron User Manual
 
-**Firmware 2.32.0** · October 2026 · Board: T4VOC-301 R3.1.D (Teensy 4.1)
+**Firmware 2.32.1** · October 2026 · Board: T4VOC-301 R3.1.D (Teensy 4.1)
 
 Orchestron is an all-in-one audio and motion controller for droids and animatronics. One board
 takes a live voice and two WAV players, and mixes all three to one output. It changes the voice
@@ -474,7 +474,7 @@ and **Save file...** work without a robot (a card in a card reader).
 Each line is a **rule**: *when this happens, do that*.
 
 ```ini
-ch13 low      = mode:idle          ; switch on ch13 moved down
+ch13 low      = mode:idle, audio:manual   ; switch on ch13 moved down: two things at once
 ch13 mid      = mode:auto
 ch13 high     = mode:control
 pad.1         = seq:wave           ; button 1 on the button pad, clicked
@@ -482,11 +482,24 @@ pad.1.double  = seq:nod
 shift+pad.1   = toggle:look        ; ... while "shift" is held
 ch10 >1800    = seq:look           ; stick pushed past 1800 us
 ch10 >1800.exit = stopseq          ; ... and let go again
-link.lost     = stopseq            ; the RC link dropped
+link.lost     = stopseq            ; the RC link dropped ...
+link.lost     = home               ; ... a second line for the same trigger: both run
 ```
 
 A rule fires when its trigger **happens**: a switch moves, a stick crosses a value, a button
 is clicked. It never fires again and again while the condition holds.
+
+**Doing several things.** A line can list up to three actions, separated by commas. For more,
+write the same trigger on another line. **Every line for a trigger runs**, in the order they're
+in the file, and each line can have its own `when=` (2.32.1; before that, a repeated line
+replaced the earlier one):
+
+```ini
+link.lost  = stopseq, stopaudio, home
+link.lost  = mode:idle             ; a fourth thing: another line
+pad.3      = home,    when=mode.idle      ; the same button does different things
+pad.3      = seq:nod, when=mode.auto      ; ... in different modes
+```
 
 ### Triggers
 
@@ -510,7 +523,9 @@ is clicked. It never fires again and again while the condition holds.
 
 ### Actions
 
-Up to 3 per rule, separated by commas:
+Up to 3 per line, separated by commas; for more, repeat the trigger on another line (above).
+`stop` covers `stopseq` and `stopaudio` in one, and there is no `audio:off`: `audio:manual`
+turns off random sounds and music, and `stopaudio` stops what is playing now.
 
 | Action | Does |
 |---|---|
@@ -540,6 +555,9 @@ pad.3     = home, when=mode.idle|manual       ; homing only while stopped
 ch3 low   = mode:control, when=gate           ; the mode switch works only with the gate open
 ```
 
+A line whose `when=` doesn't hold simply doesn't run; other lines for the same trigger still
+do.
+
 ### Modifiers: buttons at once
 
 The pad sends one button at a time, so combinations use other channels as modifiers, like a
@@ -552,8 +570,10 @@ shift = ch9 high        ; zones: low, mid, high
 left  = ch4 <1200       ; or a value in us: <N, >N, N-M, N, N~W
 ```
 
-When several pad rules match, the one with the most modifiers held wins. Up to 8 modifiers and
-96 rules.
+When several pad rules match, the ones needing the most held modifiers win, and all of them
+run: with shift held, `shift+pad.1` runs and plain `pad.1` doesn't. A line whose `when=` doesn't
+hold doesn't count, so `shift+pad.4 = seq:look, when=mode.auto` leaves `pad.4` working with
+shift held in the other modes. Up to 8 modifiers and 96 rule lines.
 
 ### Rules that set a mode, the audio state, a preset or a setting
 
@@ -1014,6 +1034,7 @@ cable (it must carry data) or port.
 
 | Version | Date | New for users |
 |---|---|---|
+| 2.32.1 | Oct 2026 | The same trigger on several lines: every line runs (it used to replace the earlier one); a pad button can do different things in different modes |
 | 2.32.0 | Oct 2026 | Activities: random chatter, music playlists, sequences picked now and then, lifelike idle motion in AUTO; `set:`, `next`, sound ranges, `audio:music`; sequences can end by going home; sample SD cards |
 | 2.31.0 | Oct 2026 | ConfigApp's Events tab: edit what the switches, sticks and buttons do, with Learn, Test and a live view of which rule fired |
 | 2.30.0 | Oct 2026 | `events.ini`: one file for every switch, stick value, button and link event, with modes, presets and random sounds; converts `buttons.ini` and the old switch settings |
