@@ -1,0 +1,5 @@
+# Keep the firmware and sounds byte for byte
+*.hex binary
+*.wav binary
+*.jpg binary
+*.png binary
