@@ -236,8 +236,8 @@ mode, §4, or a card reader) and reboot. Each save keeps the previous file as `c
 Settings files from older firmware load automatically; renamed settings are converted, and the
 next save writes the current names.
 
-> Saving or loading the config briefly stops any WAV that's playing, because the player and the
-> save can't share the SD card safely. During a recorder take, saving answers "busy" instead.
+> Saving and loading don't interrupt a WAV that's playing. During a recorder take, saving answers
+> "busy" instead, because the card is kept free for the take.
 
 ### USB drive mode
 
@@ -862,17 +862,24 @@ at 115200 baud by default (`serial` page).
 
 | Command | Example | Does |
 |---|---|---|
-| `CA` / `CB` | `<CA2001>` | Play WAV 2001 on player A / B |
-| `PSA` / `PSB` / `PSX` | `<PSX>` | Stop A / B / all |
+| `CA` / `CB` | `<CA2001>` | Play the WAV numbered 2001 on player A / B |
+| `PSA` / `PSB` / `PSX` | `<PSX>` | Stop A / B / both |
 | `PVV` / `PVA` / `PVB` | `<PVV75>` | Voice / WAV A / WAV B volume (0-100) |
-| `PMUT` | `<PMUT>` | Mute everything (before a reboot) |
-| `PP` | `<PP140>` | Pitch (050-300 = 0.5x-3x) |
-| `PG` | `<PG100>` | Voice input gain (x0.01) |
-| `EF` / `EA` | `<EF1>` | Voice pre-filter / amp on (1) or off (0) |
-| `RE` / `RF` / `RW` | `<RF30>` | Ring modulator on/off, frequency (Hz), waveform |
-| `QPA` | `<QPA>` -> `<QPA1>` | Is player A playing? |
-| `QF` | `<QF>` | File counts per bank |
-| `QE` | `<QE>` | Which effects are on (bitmask) |
+| `PP` | `<PP140>` | Pitch x0.01 (070 = 0.70x, 140 = 1.40x) |
+| `PG` | `<PG100>` | Voice input gain x0.01 |
+| `EX` | `<EX49>` | Set every effect switch at once from a bitmask (bits below) |
+| `ES` / `EC` / `ET` | `<ES5>` | Switch one effect on / off / over, by its bit number |
+| `RE` | `<RE1>` | Ring modulator on (1) or off (0) |
+| `RF` / `RW` | `<RF30>` | Ring modulator frequency (Hz) / waveform (0 sine, 1 triangle, 2 sawtooth, 3 square) |
+| `RS` | `<RS>` | Ring modulator status (printed on the USB console) |
+| `PN` | `<PN100>` | Accepted for HCR compatibility; Orchestron has no noise reduction and says so |
+| `QPA` | `<QPA>` -> `<QPA1>` | Is player A playing? (1 / 0) |
+| `QF` | `<QF>` -> `<QF2000:143>` | WAV files per bank (bank start : count, comma separated) |
+| `QE` | `<QE>` -> `<QE817>` | Which effects are on, as a bitmask |
+
+Effect bits: 0 pre-filter, 1 voice amp, 2 noise gate, 4 pitch shift, 5 ring modulator,
+6 stormtrooper filter, 7 stormtrooper radio sounds, 8 reverb, 9 post-filter. Menu `9` -> `8`
+on the board prints the same list.
 
 While the voice is above the radio threshold, Orchestron sends `<QVPnn>` (level 0-70) to all
 ports, which RX-80B uses to light a mouth. It also reports `<QPA1>` / `<QPA0>` as player A
@@ -949,8 +956,8 @@ MAIN MENU
 |                           [A] AUTO ranges
 +-- [B] Configuration File: show, load, save, SD status, compare, [0] list all settings,
 |       [7] change a setting by number, [8] reset to defaults, [9] SD stress test
-+-- [Q] Sequences: list, button actions, play by name, stop, reload, status, trace,
-|       [8] button pad monitor
++-- [Q] Sequences: list, show events.ini (rules), play by name, stop, reload, status, trace,
+|       [8] input monitor (pad, channels in us)
 +-- [J] Sound Reactive: [1] live view, servo, source, angles, band, AGC, envelope, ...
 |       [O] NeoPixel test, pattern, brightness, hues, saturation, idle, rings, count
 +-- [E] SBUS Recorder: [1] start/stop  [2] status  [3] list  [4] record servos + pad
