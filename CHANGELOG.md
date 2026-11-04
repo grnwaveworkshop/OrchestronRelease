@@ -4,6 +4,55 @@ User-facing changes in each Orchestron release. The firmware for the current rel
 [`firmware/`](firmware/); the [user manual](docs/USER_MANUAL.md) describes how to use each
 feature.
 
+## 2.46.0 - November 2026
+
+Everything since 2.32.1, for users. Works with [ConfigApp](https://github.com/grnwaveworkshop/ConfigApp) 0.15.2 or later.
+
+**Upgrading from 2.32.1**
+- Load the new `.hex`; the card's files are kept. Settings are no longer converted from older
+  versions: a setting the firmware doesn't know is reported at boot as unknown and ignored.
+- **The SBUS recorder's switch is an `events.ini` rule now.** If your `config.ini` has
+  `rec.switchCh` / `rec.switchMode`, they are ignored: add the switch to `events.ini` instead,
+  e.g. `ch20 high = rec:start` and `ch20 low = rec:stop` (a switch), or `ch20 high = rec:toggle`
+  (a button), with your channel.
+- **Random sounds come from an activity.** If `events.ini` uses `audio:random` and has no
+  `[activity.NAME]` with `when = audio.random`, random sounds stay silent: add the
+  `[activity.chatter]` section shown in the manual (Activities). The example card has it.
+- A card with no `events.ini` gets a blank one, with comments on how to write rules.
+
+**New**
+- **Record to WAV:** the mic or line in, raw or with the effects, or both at once as two files
+  (`recwav:` actions, `rec.wav.*` settings). A WAV can also be the voice, through the effects,
+  alone or with the mic (`audio.in.source` 2-7).
+- **Buttons on any channel** (`[buttons]` in `events.ini`, several per channel by value), with
+  click, double, long, `.release` and `.repeat`; `cycle(...)` runs the next action on each press;
+  `set:KEY+=N` / `-=N` steps a setting (volume up and down from a button).
+- **ConfigApp's Reboot button** restarts the board (not during a recording or USB drive mode).
+- **The loop profiler:** menu `P` and ConfigApp's Dashboard show how long each part of the main
+  loop takes.
+- Standard 16-channel SBUS receivers and radios with fewer channels work (`rc.sbus.channels`).
+
+**Better**
+- The pitch shifter uses about a seventh of the CPU it did, so the voice no longer drops out
+  under load; pitch off bypasses it completely.
+- Saved audio settings all apply at power-up; master volume works on LINE OUT.
+- SBUS: the link drops at once when the transmitter goes off, and no frames are lost.
+- The serial command set is documented in one place in the manual; `<KA,…>` says when a sound
+  or sequence didn't start.
+
+**Fixed in 2.46.0**
+- A button held while the droid starts, or when the radio link comes back, fires nothing until
+  it's let go and pressed again (as the manual always said).
+- Holding the MTP button toggles USB drive mode once; it no longer switches on and straight off.
+- USB drive mode waits while a recording is being saved, so a take can't be corrupted.
+- The noise gate opens again after it closes.
+- A failed config save keeps the old `config.ini`.
+- Menu `R` refuses to reboot during a recording, like ConfigApp's button.
+- Switching to IDLE never moves a servo home; a long `events.ini` rule can't overrun memory when
+  it's described; playing WAV `1001` can't pick `10010.wav`.
+
+**Known:** the talking jaw's envelope runs about 10-15 % slower than its settings say.
+
 ## 2.32.1 - October 2026
 
 - **The same trigger on several lines: every line runs**, in file order, each with its own

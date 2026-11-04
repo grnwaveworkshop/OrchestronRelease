@@ -8,7 +8,8 @@ files on the SD card, without reflashing.
 
 This repository holds the released firmware, the user manual and an example SD card.
 
-Current release: **2.32.1** (October 2026). See [CHANGELOG.md](CHANGELOG.md).
+Current release: **2.46.0** (November 2026). See [CHANGELOG.md](CHANGELOG.md), which also says
+what to check when updating from 2.32.1.
 
 ## The board
 
@@ -30,6 +31,8 @@ Add a FAT32 microSD card (32 GB or smaller) for the settings and sounds.
 - Real-time voice effects: pitch shift, ring modulator, stormtrooper helmet filter, reverb,
   noise gate, filters. Each switches on and off on its own.
 - Stormtrooper "radio on / off" clicks when you start and stop talking.
+- Record the mic or line in to a WAV on the card, raw or with the effects; or play a WAV
+  through the voice effects.
 - WAV playback by number, a random file from a bank or a number range, or the next file in a
   bank.
 
@@ -43,7 +46,8 @@ Add a FAT32 microSD card (32 GB or smaller) for the settings and sounds.
 
 **Switches, sticks and buttons** (`events.ini`)
 - One file says what every control does: a switch position, a stick past a value, a click,
-  double click or long press on a 14-button pad, the RC link dropping, a mode change.
+  double click or long press on a 14-button pad or on buttons on any channel, the RC link
+  dropping, a mode change.
 - Rules can start sequences and sounds, change the mode, apply voice presets or change any
   setting.
 
@@ -77,7 +81,7 @@ Add a FAT32 microSD card (32 GB or smaller) for the settings and sounds.
 
 1. **Load the firmware.** Install Teensy Loader (part of Teensyduino, from
    [pjrc.com](https://www.pjrc.com/teensy/loader.html)). Connect the board by USB, open
-   `firmware/Orchestron_v2.32.1.hex` in Teensy Loader (File > Open HEX File), and press the
+   `firmware/Orchestron_v2.46.0.hex` in Teensy Loader (File > Open HEX File), and press the
    button on the Teensy. The board reboots when it's done.
 2. **Prepare the SD card.** Format a microSD card FAT32 and copy everything in
    `SDCardExamples/` to the root of the card (not into a folder). Put it in the Teensy's card
@@ -102,7 +106,11 @@ and each file on the example card explains its own format in its comments.
 ## Updating
 
 Load the new `.hex` the same way. Your `config.ini`, sounds and other files on the SD card are
-kept, and settings from an older version are converted on the first boot.
+kept. Settings are not converted from older versions: one the new firmware doesn't know is
+reported in the boot log as unknown and ignored. Coming from 2.32.1, two things to check (the
+[CHANGELOG](CHANGELOG.md) has the details): the SBUS recorder's switch (`rec.switchCh`) is now an
+`events.ini` rule, and random sounds need an `[activity.NAME]` with `when = audio.random`. Use
+ConfigApp 0.15.2 or later.
 
 ## Documentation
 
