@@ -13,7 +13,7 @@ that matches how your droid is controlled. The [user manual](../USER_MANUAL.md) 
 on grnwave.com. The guides name pins as they are printed on the board.
 
 <a href="https://grnwave.com/teensy-vocalizer-v3-user-manual/">
-<img src="https://grnwave.com/wp-content/uploads/2026/06/v3-pinout.png" alt="Board pinout" width="600">
+<img src="https://grnwave.com/wp-content/uploads/2026/11/v3-pinout-r2.png" alt="Board pinout" width="600">
 </a>
 
 **Every build:**
