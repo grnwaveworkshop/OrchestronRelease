@@ -11,6 +11,15 @@ reflashing needed.
 This manual is about using the product. The latest firmware, this manual and an example SD card
 are at [https://github.com/grnwaveworkshop/OrchestronRelease](https://github.com/grnwaveworkshop/OrchestronRelease).
 
+**New to Orchestron?** Start with a quick start guide. Each one covers wiring, setup and a first
+test for one kind of build, and links back here for the details:
+
+| Quick start | For |
+|---|---|
+| [Sound board for another controller](quickstart/QS1_SERIAL_SOUND_BOARD.md) | A main controller sends serial commands; Orchestron does the voice and sounds |
+| [RC receiver (PWM)](quickstart/QS2_RC_PWM.md) | A standard RC receiver, one lead per channel: servos, switches and sound buttons |
+| [SBUS receiver](quickstart/QS3_SBUS.md) | One SBUS lead with up to 24 channels: servos, switches, button pads |
+
 ---
 
 ## Contents
@@ -90,9 +99,10 @@ talking heads and skulls, helmets, and props.
 - **Orchestron board:** the [Vocalizer V3 with Teensy](https://grnwave.com/product/vocalizer-v3-with-teensy/)
   from Grnwave Workshop (board T4VOC-301 R3.1.D, with a Teensy 4.1).
 - **microSD card:** FAT32, 32 GB or smaller, Class 10.
-- **5 V power:** USB is enough for the board alone. Servos and LEDs need their own 5 V supply
-  through the power connector, sized for them (a typical servo can draw 1 A or more when it
-  stalls).
+- **5 V power:** USB is enough for the board alone. Servos, LEDs and an RC receiver need a
+  regulated 5 V supply on the power terminal J1, sized for them (a typical servo can draw 1 A or
+  more when it stalls). Only 5 V: the same rail feeds the Teensy, so not a 6 V or 7.4 V servo
+  supply.
 - **Audio:**
   - in: an electret mic on MIC IN, or a line-level source (wireless mic receiver, mixer) on
     LINE IN
@@ -109,36 +119,59 @@ talking heads and skulls, helmets, and props.
 ## 3. The Board
 
 ```
-+------------------------------------------+
-|           ORCHESTRON  (T4VOC-301)        |
-|                                          |
-|  [S1][S2][S3][S4][S5][S6][S7][S8]        |  servo outputs (3.3 V signal)
-|  [IO1][IO2][IO3][IO4][IO5][IO6][IO7][IO8]|  level-shifted I/O (5 V signal)
-|                                          |
-|  MIC IN   LINE IN   LINE OUT             |  audio
-|  J5 UART IN   J3 UART   J2 RS-485        |  serial / SBUS
-|  SW2 (USB drive button)   LED_A  LED_B   |
-+------------------------------------------+
-        USB                 SD card
++----------------------------------------------------+
+|              ORCHESTRON  (T4VOC-301)               |
+|                                                    |
+|  S1 .. S8    servo outputs        GND / +5V / SIG  |
+|  IO1 .. IO8  I/O (RC PWM in)      GND / +5V / SIG  |
+|  J4          J5 TX voltage jumper (5V or 3V3)      |
+|                                                    |
+|  J1  5 V power in (screw terminal)                 |
+|  J5  UART input: SBUS or COM1     RX / TX / G      |
+|  J3  UART + I2C (2x4)     J2  RS-485 (2x4), COM2   |
+|                                                    |
+|  MIC IN   LINE IN   LINE OUT   HEADPHONES          |
+|  SW2 (USB drive button)   LED_A   LED_B            |
++----------------------------------------------------+
+         Teensy USB              SD card slot
 ```
+
+The drawing shows what's on the board, not where. The
+[pinout photo](https://grnwave.com/teensy-vocalizer-v3-user-manual/) on grnwave.com shows where
+each connector is; pins are named here as they are printed on the board.
+
+### Power
+
+| Connector | Use |
+|---|---|
+| **J1** (2-pin screw terminal) | Regulated **5 V** in, for servos, LEDs, the RC receiver and the board. The board's +5 V rail: every +5 V pin on the headers below |
+| **Teensy USB** | Powers the Teensy and the audio only. With USB alone the +5 V header pins are dead, so servos and a receiver plugged into the board get no power |
+
+Only 5 V on J1. The rail also feeds the Teensy, so a 6 V or 7.4 V servo supply would damage it.
+Size the supply for every servo stalling at once (1 A or more each), plus about 60 mA per
+NeoPixel at full white.
 
 ### Audio connectors
 
 | Connector | Use |
 |---|---|
-| **MIC IN** (2-pin) | Electret microphone |
-| **LINE IN** (3.5 mm) | Line-level source, such as a wireless mic receiver |
-| **LINE OUT** (3.5 mm) | The mixed output, to an amplifier |
+| **MIC IN** (J10, 2-pin) | Electret microphone (pin 1 GND) |
+| **LINE IN** (3.5 mm) | Line-level source, such as a wireless mic receiver. Also on the 3-pin header J8: GND, L, R |
+| **LINE OUT** (3.5 mm) | The mixed output, to an amplifier or powered speaker. Also on the 3-pin header J7: GND, L, R |
+| **HEADPHONES** (3.5 mm) | The same mix, for headphones (`audio.mix.master` sets both) |
 
 ### Servo outputs S1-S8
 
-Standard servo headers with a 3.3 V signal, which almost every servo accepts. Any one of them
-can drive a NeoPixel strip instead (§13).
+Standard 3-pin servo headers: **signal** on the inside row, **+5 V** in the middle, **GND** on
+the row at the board's edge (a servo plug's dark wire to the edge). The signal is
+buffered to 5 V; +5 V comes from J1. Any one of them can drive a NeoPixel strip instead (§13).
 
 ### I/O pins IO1-IO8
 
-Level-shifted to 5 V. By default they read RC PWM receiver channels. Any one can drive a
-NeoPixel strip (§13). IO5 and IO6 can instead carry a serial port (§16).
+3-pin headers in the same order as the servo headers. The signal is level-shifted to **5 V**.
+By default IO1-IO8 read RC PWM receiver channels, and a receiver lead plugs straight in
+(its + and - also power the receiver from J1). Any one can drive a NeoPixel strip (§13). IO5 and
+IO6 can instead carry a serial port.
 
 ### Serial ports
 
@@ -147,6 +180,14 @@ NeoPixel strip (§13). IO5 and IO6 can instead carry a serial port (§16).
 | **USB** | Teensy USB | Menu, ConfigApp, commands, power |
 | **COM1** | J5 (default), J3, or IO5/IO6 | Commands from another controller; J5 is also the best input for SBUS |
 | **COM2** | J2, RS-485 | Commands over a long or noisy cable |
+
+| Connector | Pins | Notes |
+|---|---|---|
+| **J5** UART input (3-pin) | RX, TX, G | RX takes 3.3 V or 5 V. **No +5 V pin**: the middle pin is TX, so a servo-style lead must not be plugged in as is (§9) |
+| **J3** (2x4) | G, 5V, RX3, TX3; G, 3.3, SCL, SDA | RX3 and TX3 are 3.3 V, straight to the Teensy: for a 3.3 V controller only |
+| **J2** RS-485 (2x4) | B, A, 5V, G (each pin doubled) | Differential: needs an RS-485 transceiver at the other end, A to A and B to B |
+| **J4** jumper (1x3) | 5V, VIO, 3V3 | Sets the level of J5's **TX** only: VIO to 5V for a 5 V controller, VIO to 3V3 for a 3.3 V one. Usually left off; fit it only if the controller reads replies from J5 |
+| **IO5 / IO6** | IO5 TX, IO6 RX | 5 V signals. Using them as a port takes them from the I/O pins |
 
 ### LEDs and button
 
@@ -162,7 +203,7 @@ NeoPixel strip (§13). IO5 and IO6 can instead carry a serial port (§16).
 
 1. **Prepare the SD card.** Format it FAT32 and put it in the Teensy's card slot. Copy any WAV
    files to the root (see [WAV files](#wav-files)). The `SDCardExamples/` folder (in [OrchestronRelease](https://github.com/grnwaveworkshop/OrchestronRelease)) is
-   a ready-made starting card (2.32.0). Copy it all to the card and the droid says hello at
+   a ready-made starting card, set up for an SBUS receiver. Copy it all to the card and the droid says hello at
    power-up, with no transmitter. It has `config.ini` with every setting described, an
    `events.ini` and a `sequences.ini` with test sequences (all with instructions inside), and four
    sounds: two droid sounds and two music tracks. Try ConfigApp's Actions tab: each sequence
@@ -451,7 +492,13 @@ reboot.
 
 ### SBUS
 
-- Connect the receiver's SBUS output to **J5** (`rc.sbus.port` 1, best), J3 (3), or IO5/IO6 (6).
+- Connect the receiver's SBUS output to **J5 RX** (`rc.sbus.port` 1, best), J3 RX3 (3), or
+  IO6 (6), and its GND to GND (J5 G).
+- **Power the receiver from another header.** J5 has no +5 V pin (its middle pin is TX), so don't
+  plug a 3-wire servo-style SBUS lead into it as is. Take the receiver's + and - from any free
+  S or IO header (middle row +5 V, with J1 powered).
+- **Sharing a receiver** with another controller (a motor board, say): the SBUS signal can go to
+  both boards (a Y lead), with the grounds joined.
 - Leave `rc.sbus.invert` at 1. The board has no hardware inverter, so the Teensy inverts the
   signal. If channel values look like garbage, check this first.
 - **Port conflict:** if COM1 is set to the same port, SBUS wins and COM1 is off for that boot.
@@ -928,9 +975,9 @@ A menu servo test on the jaw servo while a sound plays fights the jaw: test it i
 One WS2812-type (NeoPixel) strip that follows the voice, like the jaw.
 
 1. **Pick the pin:**
-   - IO1-IO8 give a 5 V data signal: set `pin.io.ioN.type` to 4 and enable it.
-   - Or use a servo header S1-S8 (3.3 V data): set `pin.servo.sN.type` to 4, and turn that servo
-     off.
+   - A servo header S1-S8 (5 V data, buffered; best): set `pin.servo.sN.type` to 4, and turn
+     that servo off.
+   - Or IO1-IO8 (5 V data): set `pin.io.ioN.type` to 4 and enable it.
    - Only one pin can drive a strip.
 2. **The strip:** `neo.strip.count` (number of LEDs) and `neo.strip.order` (0 GRB for WS2812B,
    1 RGB, 2 BRG, 3 GRBW, 4 RGBW for SK6812). Save and reboot.
@@ -950,7 +997,7 @@ One WS2812-type (NeoPixel) strip that follows the voice, like the jaw.
 
 All patterns follow the jaw's sound level, so tune the jaw first (§12). The spectrum shows one
 frequency band per LED, from 100 Hz to 8 kHz. If a strip on an IO pin flickers or shows random
-colours, add a 74AHCT125 buffer or try a servo header.
+colours, move it to a servo header (its output is buffered), or add a 74AHCT125 buffer.
 
 ---
 
@@ -980,14 +1027,14 @@ Records your transmitter moves to a file. A short take can be turned into a sequ
   cut before then loses it.
 
 **A take into a sequence (on the PC).** Copy the take off the card (USB drive mode, menu `T`),
-then, in the repository:
+then run the PC script `rec2seq.py` (Python 3, in the `tools/` folder of the release repository):
 
 ```bash
 py tools/rec2seq.py REC_003.csv --info
 ```
 
 ```bash
-py tools/rec2seq.py REC_003.csv --name wave --from 2 --to 9 --check --append SDCardMyDroid/sequences.ini
+py tools/rec2seq.py REC_003.csv --name wave --from 2 --to 9 --append SDCardMyDroid/sequences.ini
 ```
 
 `--info` shows what's in the take and which servo each channel drives. The second line keeps 2-9 s
@@ -1273,13 +1320,13 @@ a reboot.
 | Audio out | Line out (3.5 mm): live voice + 2 WAV players mixed |
 | Voice effects | Pitch 0.5x-3x, ring modulator, stormtrooper filter, reverb, noise gate, pre/post HPF and LPF |
 | Sound analysis | FFT 1024 points (43 Hz bins), new frame every 11.6 ms |
-| Servo outputs | 8 (S1-S8), 3.3 V signal, 6 easing curves |
-| I/O pins | 8 (IO1-IO8), 5 V level-shifted |
+| Servo outputs | 8 (S1-S8), 5 V signal (buffered), 6 easing curves |
+| I/O pins | 8 (IO1-IO8), level-shifted to 5 V |
+| Power | 5 V regulated on J1 (servos, LEDs, receiver, board); USB powers the board alone |
 | RC input | SBUS (up to 24 channels) or RC PWM (up to 8) |
 | LEDs | One WS2812/SK6812 strip, up to 300 LEDs |
 | Serial | USB, COM1 (TTL, 3 port choices), COM2 (RS-485); 115200 baud default |
 | Storage | microSD, FAT32 (32 GB or smaller) |
-| Power | 5 V via USB or the power connector |
 | Settings | 261, on 10 ConfigApp pages |
 
 ---

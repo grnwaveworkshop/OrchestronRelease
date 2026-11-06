@@ -72,12 +72,24 @@ Add a FAT32 microSD card (32 GB or smaller) for the settings and sounds.
 | Path | Contents |
 |---|---|
 | [`firmware/`](firmware/) | The firmware as a `.hex` file for Teensy Loader (the latest release; earlier ones are in the repository history) |
+| [`docs/quickstart/`](docs/quickstart/) | Quick start guides: wiring and setup for a sound board driven by another controller, an RC PWM receiver, or an SBUS receiver |
 | [`docs/USER_MANUAL.md`](docs/USER_MANUAL.md) | The user manual |
+| [`tools/rec2seq.py`](tools/rec2seq.py) | PC script (Python 3): turns an SBUS recorder take into a sequence (manual §14) |
 | [`SDCardExamples/`](SDCardExamples/) | An example SD card: `config.ini` with every setting described, `events.ini`, `sequences.ini` with test sequences, two droid sounds and two music tracks |
 | [`CHANGELOG.md`](CHANGELOG.md) | What changed in each release |
 | [`LICENSE`](LICENSE) | The license (non-commercial use) |
 
 ## Getting started
+
+**Building a droid?** Start with the quick start that matches how it's controlled:
+
+| Quick start | For |
+|---|---|
+| [Sound board for another controller](docs/quickstart/QS1_SERIAL_SOUND_BOARD.md) | A main controller sends serial commands; Orchestron does the voice and sounds |
+| [RC receiver (PWM)](docs/quickstart/QS2_RC_PWM.md) | A standard RC receiver, one lead per channel |
+| [SBUS receiver](docs/quickstart/QS3_SBUS.md) | One SBUS lead, up to 24 channels |
+
+**Or try the example card first:**
 
 1. **Load the firmware.** Install Teensy Loader (part of Teensyduino, from
    [pjrc.com](https://www.pjrc.com/teensy/loader.html)). Connect the board by USB, open
@@ -114,6 +126,7 @@ ConfigApp 0.15.2 or later.
 
 ## Documentation
 
+- [Quick starts](docs/quickstart/): wiring, setup and a first test, one guide per kind of build.
 - [User manual](docs/USER_MANUAL.md): the board, settings, audio, servos, RC control,
   `events.ini`, sequences, the sound-reactive jaw, NeoPixels, the SBUS recorder, the serial menu
   and command set, troubleshooting.
